@@ -1,15 +1,22 @@
-import cv2
+import cv2, time
+import pandas as pd
+from datetime import datetime
+
 
 class MotionDetection:
     def __init__(self):
         self.video = cv2. VideoCapture(0)    #Capture video from camera.
         self.static_back = None
+        self.pre_motion = False
+
 
     def main(self):
         while (True):
             check, frame = self.video.read()   #get frames from video.
             if not check:
                 break
+
+            motion = False
 
             # Convert frame to black&white and blur it.
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -33,13 +40,19 @@ class MotionDetection:
                 if cv2.contourArea(c) < 5000:
                     continue
 
+                motion = True
                 (x,y,w,h) = cv2.boundingRect(c)
-
                 # Draw a green rectangle in the moving object.
                 cv2.rectangle(frame, (x,y), (x+w, y+w), (0, 255,0), 2)
 
             # Show the image.
             cv2.imshow('frame', frame)
+            if self.pre_motion != motion:
+                if self.pre_motion == False:
+                    print("Move detected: ", datetime.now())
+                else:
+                    print("Move finished: ", datetime.now())
+                self.pre_motion = motion
 
             # Check for 'Ctrl+c' command to finish
             if cv2.waitKey(1) & 0xFF == ord('q'):
